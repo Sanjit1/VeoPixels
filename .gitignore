@@ -1,0 +1,5 @@
+# Ignore db directory
+db
+
+# Ignore qsf
+*.qsf
