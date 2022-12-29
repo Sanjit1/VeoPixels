@@ -4,5 +4,8 @@ simulation
 incremental_db
 output_files
 
-# Ignore qsf
-*.qsf
+# Ignore these random files
+Veopixels.qpf
+Veopixels.qsf
+Veopixels.qws
+Veopixels_nativelink_simulation.rpt
