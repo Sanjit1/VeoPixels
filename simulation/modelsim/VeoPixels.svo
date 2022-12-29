@@ -17,7 +17,7 @@
 // PROGRAM "Quartus Prime"
 // VERSION "Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition"
 
-// DATE "12/28/2022 19:48:28"
+// DATE "12/28/2022 20:04:26"
 
 // 
 // Device: Altera 10M50DAF484C7G Package FBGA484
@@ -160,10 +160,10 @@ wire \S|SLE|Add1~46_combout ;
 wire \S|SLE|Equal1~6_combout ;
 wire \S|SLE|Add1~6_combout ;
 wire \S|SLE|clk_counter~1_combout ;
-wire \S|Mux15~0_combout ;
+wire \S|Mux8~0_combout ;
 wire \S|LessThan0~0_combout ;
-wire \S|Mux7~0_combout ;
-wire \S|Mux19~0_combout ;
+wire \S|Mux0~0_combout ;
+wire \S|Mux16~0_combout ;
 wire \S|SLE|Mux0~0_combout ;
 wire \S|SLE|Mux0~1_combout ;
 wire \S|SLE|binary[0]~feeder_combout ;
@@ -2238,20 +2238,20 @@ defparam \S|SLE|clk_counter[3] .power_up = "low";
 // synopsys translate_on
 
 // Location: LCCOMB_X19_Y3_N8
-fiftyfivenm_lcell_comb \S|Mux15~0 (
+fiftyfivenm_lcell_comb \S|Mux8~0 (
 // Equation(s):
-// \S|Mux15~0_combout  = (\S|current_led [1] & (!\S|current_led [2] & (\S|current_led [3] $ (!\S|current_led [0])))) # (!\S|current_led [1] & (\S|current_led [0] $ (((\S|current_led [3]) # (!\S|current_led [2])))))
+// \S|Mux8~0_combout  = (\S|current_led [1] & (!\S|current_led [3] & (\S|current_led [2] $ (\S|current_led [0])))) # (!\S|current_led [1] & ((\S|current_led [2] & (\S|current_led [3])) # (!\S|current_led [2] & ((!\S|current_led [0])))))
 
 	.dataa(\S|current_led [1]),
 	.datab(\S|current_led [3]),
 	.datac(\S|current_led [2]),
 	.datad(\S|current_led [0]),
 	.cin(gnd),
-	.combout(\S|Mux15~0_combout ),
+	.combout(\S|Mux8~0_combout ),
 	.cout());
 // synopsys translate_off
-defparam \S|Mux15~0 .lut_mask = 16'h1847;
-defparam \S|Mux15~0 .sum_lutc_input = "datac";
+defparam \S|Mux8~0 .lut_mask = 16'h4265;
+defparam \S|Mux8~0 .sum_lutc_input = "datac";
 // synopsys translate_on
 
 // Location: LCCOMB_X19_Y3_N30
@@ -2274,7 +2274,7 @@ defparam \S|LessThan0~0 .sum_lutc_input = "datac";
 // Location: FF_X19_Y3_N9
 dffeas \S|uncoded_24_bit[8] (
 	.clk(\S|clock29280~clkctrl_outclk ),
-	.d(\S|Mux15~0_combout ),
+	.d(\S|Mux8~0_combout ),
 	.asdata(vcc),
 	.clrn(vcc),
 	.aload(gnd),
@@ -2291,26 +2291,26 @@ defparam \S|uncoded_24_bit[8] .power_up = "low";
 // synopsys translate_on
 
 // Location: LCCOMB_X19_Y3_N22
-fiftyfivenm_lcell_comb \S|Mux7~0 (
+fiftyfivenm_lcell_comb \S|Mux0~0 (
 // Equation(s):
-// \S|Mux7~0_combout  = (\S|current_led [3] & (\S|current_led [0] & (\S|current_led [1] $ (\S|current_led [2])))) # (!\S|current_led [3] & (\S|current_led [1] $ (((!\S|current_led [2] & !\S|current_led [0])))))
+// \S|Mux0~0_combout  = (\S|current_led [1] & ((\S|current_led [2] & ((!\S|current_led [0]))) # (!\S|current_led [2] & (!\S|current_led [3])))) # (!\S|current_led [1] & (\S|current_led [3] & (\S|current_led [2] $ (\S|current_led [0]))))
 
 	.dataa(\S|current_led [1]),
 	.datab(\S|current_led [3]),
 	.datac(\S|current_led [2]),
 	.datad(\S|current_led [0]),
 	.cin(gnd),
-	.combout(\S|Mux7~0_combout ),
+	.combout(\S|Mux0~0_combout ),
 	.cout());
 // synopsys translate_off
-defparam \S|Mux7~0 .lut_mask = 16'h6A21;
-defparam \S|Mux7~0 .sum_lutc_input = "datac";
+defparam \S|Mux0~0 .lut_mask = 16'h06E2;
+defparam \S|Mux0~0 .sum_lutc_input = "datac";
 // synopsys translate_on
 
 // Location: FF_X19_Y3_N23
 dffeas \S|uncoded_24_bit[16] (
 	.clk(\S|clock29280~clkctrl_outclk ),
-	.d(\S|Mux7~0_combout ),
+	.d(\S|Mux0~0_combout ),
 	.asdata(vcc),
 	.clrn(vcc),
 	.aload(gnd),
@@ -2327,27 +2327,26 @@ defparam \S|uncoded_24_bit[16] .power_up = "low";
 // synopsys translate_on
 
 // Location: LCCOMB_X19_Y3_N28
-fiftyfivenm_lcell_comb \S|Mux19~0 (
+fiftyfivenm_lcell_comb \S|Mux16~0 (
 // Equation(s):
-// \S|Mux19~0_combout  = (\S|current_led [2] & (\S|current_led [0] & ((!\S|current_led [3]) # (!\S|current_led [1])))) # (!\S|current_led [2] & ((\S|current_led [1] & (\S|current_led [3] & !\S|current_led [0])) # (!\S|current_led [1] & (!\S|current_led 
-// [3]))))
+// \S|Mux16~0_combout  = (\S|current_led [1] & (\S|current_led [0] $ (((\S|current_led [3] & \S|current_led [2]))))) # (!\S|current_led [1] & (!\S|current_led [2] & (\S|current_led [3] $ (\S|current_led [0]))))
 
 	.dataa(\S|current_led [1]),
 	.datab(\S|current_led [3]),
 	.datac(\S|current_led [2]),
 	.datad(\S|current_led [0]),
 	.cin(gnd),
-	.combout(\S|Mux19~0_combout ),
+	.combout(\S|Mux16~0_combout ),
 	.cout());
 // synopsys translate_off
-defparam \S|Mux19~0 .lut_mask = 16'h7109;
-defparam \S|Mux19~0 .sum_lutc_input = "datac";
+defparam \S|Mux16~0 .lut_mask = 16'h2B84;
+defparam \S|Mux16~0 .sum_lutc_input = "datac";
 // synopsys translate_on
 
 // Location: FF_X19_Y3_N29
-dffeas \S|uncoded_24_bit[4] (
+dffeas \S|uncoded_24_bit[0] (
 	.clk(\S|clock29280~clkctrl_outclk ),
-	.d(\S|Mux19~0_combout ),
+	.d(\S|Mux16~0_combout ),
 	.asdata(vcc),
 	.clrn(vcc),
 	.aload(gnd),
@@ -2356,22 +2355,22 @@ dffeas \S|uncoded_24_bit[4] (
 	.ena(\S|LessThan0~0_combout ),
 	.devclrn(devclrn),
 	.devpor(devpor),
-	.q(\S|uncoded_24_bit [4]),
+	.q(\S|uncoded_24_bit [0]),
 	.prn(vcc));
 // synopsys translate_off
-defparam \S|uncoded_24_bit[4] .is_wysiwyg = "true";
-defparam \S|uncoded_24_bit[4] .power_up = "low";
+defparam \S|uncoded_24_bit[0] .is_wysiwyg = "true";
+defparam \S|uncoded_24_bit[0] .power_up = "low";
 // synopsys translate_on
 
 // Location: LCCOMB_X19_Y3_N2
 fiftyfivenm_lcell_comb \S|SLE|Mux0~0 (
 // Equation(s):
-// \S|SLE|Mux0~0_combout  = (!\S|SLE|clk_counter [3] & ((\S|SLE|clk_counter [4] & (\S|uncoded_24_bit [16])) # (!\S|SLE|clk_counter [4] & ((\S|uncoded_24_bit [4])))))
+// \S|SLE|Mux0~0_combout  = (!\S|SLE|clk_counter [3] & ((\S|SLE|clk_counter [4] & (\S|uncoded_24_bit [16])) # (!\S|SLE|clk_counter [4] & ((\S|uncoded_24_bit [0])))))
 
 	.dataa(\S|SLE|clk_counter [3]),
 	.datab(\S|SLE|clk_counter [4]),
 	.datac(\S|uncoded_24_bit [16]),
-	.datad(\S|uncoded_24_bit [4]),
+	.datad(\S|uncoded_24_bit [0]),
 	.cin(gnd),
 	.combout(\S|SLE|Mux0~0_combout ),
 	.cout());

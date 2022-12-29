@@ -35,11 +35,11 @@ module Tester(clk, DO);
     // Lets try using Strip to turn on multiple LEDS
     initial begin // 240'h000000111111FF000000FF000000FFFFFF0000FFFFFF00FFFFFFFFFF7F00;
         // 0
-        strip[23:00] = 24'hFF0000;
+        strip[23:00] = 24'hFF0000; // B
         // 1
-        strip[47:24] = 24'h00FF00;
+        strip[47:24] = 24'h00FF00; // R
         // 2
-        strip[71:48] = 24'h0000FF; // Red:
+        strip[71:48] = 24'h0000FF; // G
         // 3
         strip[95:72] = 24'hFFFFFF;
         // 4

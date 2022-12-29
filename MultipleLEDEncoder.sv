@@ -37,9 +37,12 @@ module MultipleLEDEncoder #(parameter LENGTH = 10)(clk, strip, DO, clock1220, cl
     // if we are at LENGTH, set sending_data to 0 and reset current_led to 0
     always @(posedge clock29280) begin
         if (current_led < LENGTH) begin
-            uncoded_24_bit <= strip[LENGTH * 24 - 1 - current_led * 24 -: 24];
-            // the problem with this is that this is taking it in the wrong order
-            // the correct way is 
+            //uncoded_24_bit <= strip[current_led * 24 +: 24];
+            // this shuffles the bits around so we want to unshuffle them
+            // currently we get 24'hBBRRGG
+            // we want 24'hRRGGBB
+            // uncoded_24_bit <= {strip[current_led * 24 + 16 +: 8], strip[current_led * 24 + 8 +: 8], strip[current_led * 24 +: 8]};
+            uncoded_24_bit <= {strip[current_led * 24 +: 8], strip[current_led * 24 + 16 +: 8], strip[current_led * 24 + 8 +: 8]}; // This is the correct one
             sending_data <= 1;
             current_led <= current_led + 1;
         end
