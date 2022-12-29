@@ -17,7 +17,7 @@ module SingleBinaryEncoder(clk, data, DO);
         end
         if (data == 0) begin
             // send 360ns high, 860ns low
-            if (clk_count < 7'd36) begin
+            if (clk_count < 7'd29) begin
                 DO = 1'b1;
             end
             else begin
@@ -25,8 +25,8 @@ module SingleBinaryEncoder(clk, data, DO);
             end
         end 
         else if (data == 1) begin
-            // send 660ns high, 560ns low
-            if (clk_count < 7'd69) begin
+            // send 690ns high, 530ns low
+            if (clk_count < 7'd79) begin
                 DO = 1'b1;
             end
             else begin

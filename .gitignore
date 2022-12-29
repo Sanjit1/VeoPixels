@@ -1,5 +1,7 @@
 # Ignore db directory
 db
+incremental_db
+simulation
 
 # Ignore qsf
 *.qsf

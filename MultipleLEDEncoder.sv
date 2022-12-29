@@ -1,4 +1,4 @@
-module MultipleLEDEncoder #(parameter LENGTH = 5)(clk, strip, DO, clock1220, clock29280, sending_data, uncoded_24_bit, binary); // Default length is 300 LEDs
+module MultipleLEDEncoder #(parameter LENGTH = 10)(clk, strip, DO, clock1220, clock29280, sending_data, uncoded_24_bit, binary); // Default length is 300 LEDs
     // Inputs
     input clk;
     input reg [LENGTH * 24 - 1:0] strip; // 24 bits per LED, LENGTH LEDs
@@ -29,7 +29,7 @@ module MultipleLEDEncoder #(parameter LENGTH = 5)(clk, strip, DO, clock1220, clo
     
     // at each clock29280 posedge, send one pixel, at the end of the strip we reset the counter
     
-    parameter LENGTH_BITS = $clog2(LENGTH + 1); // + 1 because we need the reset bit included.
+    parameter LENGTH_BITS = $clog2(LENGTH + 10); // + 1 because we need the reset bit included.
     reg [LENGTH_BITS-1:0] current_led = 0; 
 
     // At posedge of clock29280, send one pixel
@@ -37,12 +37,17 @@ module MultipleLEDEncoder #(parameter LENGTH = 5)(clk, strip, DO, clock1220, clo
     // if we are at LENGTH, set sending_data to 0 and reset current_led to 0
     always @(posedge clock29280) begin
         if (current_led < LENGTH) begin
-            uncoded_24_bit <= strip[current_led * 24 +: 24];
+            uncoded_24_bit <= strip[LENGTH * 24 - 1 - current_led * 24 -: 24];
+            // the problem with this is that this is taking it in the wrong order
+            // the correct way is 
             sending_data <= 1;
             current_led <= current_led + 1;
         end
-        else begin
+        else if (current_led < LENGTH + 10) begin
             sending_data <= 0;
+            current_led <= current_led + 1;
+        end
+        else begin
             current_led <= 0;
         end
     end
