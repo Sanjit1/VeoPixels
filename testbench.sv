@@ -82,19 +82,21 @@ module testbench(
     // * It works!
 
     // ^ Test 4: Veopixels
-    reg [4 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
-    initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
-        strip[023:000] = 24'hFA0000;
-        strip[047:024] = 24'h00FB00;
-        strip[071:048] = 24'h0000FC;
-        strip[095:072] = 24'hABCDEF;
-    end
-    // FA0000 = 00000000 11111010 00000000
-    // 00FB00 = 11111011 00000000 00000000
-    // 0000FC = 00000000 00000000 11111100
-    // ABCDEF = 11001101 10101011 11101111
-    // Remember R and G are swapped
-    Veopixels #(.LENGTH(4)) MLE(clk, strip, DO);
+    // ? reg [4 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
+    // ? initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
+    // ?     strip[023:000] = 24'hFA0000;
+    // ?     strip[047:024] = 24'h00FB00;
+    // ?     strip[071:048] = 24'h0000FC;
+    // ?     strip[095:072] = 24'hABCDEF;
+    // ? end
+    // ? // FA0000 = 00000000 11111010 00000000
+    // ? // 00FB00 = 11111011 00000000 00000000
+    // ? // 0000FC = 00000000 00000000 11111100
+    // ? // ABCDEF = 11001101 10101011 11101111
+    // ? // Remember R and G are swapped
+    // ? Veopixels #(.LENGTH(4)) MLE(clk, strip, DO);
+    // * It works! As pointless as this test is, it does work.
+
 
 
 endmodule

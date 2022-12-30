@@ -15,10 +15,9 @@ Cuz I can.
 Module | Ports | Description
 :---:|:---:|:---:
 SingleBinaryEncoder | input **clk** - Clock: 50MHz <br> input [1:0] **data** - Binary Value including reset bit. <br> output **DO** - Encoded signal of data | We use this module to encode binary data into a [format](#formatting-data) that the WS2812 can understand. A reset bit is also included.
-SingleLEDEncoder | input **clk** - Clock: 50MHz <br> input [23:0] **data** - RGB Data <br> input **clock1220** - Clock: 1220ns <br> input **sending_data** - This signal indicates whether data is being sent. <br> output **DO** - Encoded output of data to send to WS2812. <br> output [1:0] **binary** - Binary chunks of data. | This module breaks down the RGB data into 24 binary pulses of 1220ns each. Then it uses SingleBinaryEncoder to encode the binary data into a format that the WS2812 can understand and outputs it to the DO port.
-MultipleLEDEncoder | parameter **LENGTH** - Number of LEDs in the strip <br> input **clk** - Clock: 50MHz <br> input [24*LENGTH-1:0] **strip** - RGB Data of the entire strip <br> input **clock1220** - Clock: 1220ns <br> input **sending_data** - Signal indicating whether data is being sent. <br> output **DO** - Encoded output of data that the WS2812 can understand. <br> output [1:0] **binary** - Binary chunks of data representing the entire length of the strip. | This module is used to encode RGB data of a multiple LEDs into a format that the WS2812 can understand.
-
-
+SingleLEDEncoder | input **clk** - Clock: 50MHz <br> input [23:0] **data** - RGB Data <br> input **sending_data** - This signal indicates whether data is being sent. <br> output **DO** - Encoded output of data to send to WS2812. | This module breaks down the RGB data into 24 binary pulses of 1220ns each. Then it uses SingleBinaryEncoder to encode the binary data into a format that the WS2812 can understand and outputs it to the DO port.
+MultipleLEDEncoder | parameter **LENGTH** - Number of LEDs in the strip <br> input **clk** - Clock: 50MHz <br> input [24*LENGTH-1:0] **strip** - RGB Data of the entire strip <br> output **DO** - Encoded output of data that the WS2812 can understand. | This module loops through the strip and sends the data to the SingleLEDEncoder module which outputs the encoded data to the DO port.
+Veopixels | parameter **LENGTH** - Number of LEDs in the strip <br> input **clk** - Clock: 50MHz <br> input [24*LENGTH-1:0] **strip** - RGB Data of the entire strip <br> output **DO** - Encoded output of data that the WS2812 can understand. | This literally just wraps the MultipleLEDEncoder module. 
 
 
 
@@ -96,7 +95,6 @@ end
 ### Tests:
 **Test 1**: SingleBinaryEncoder
 ```sv
-// ^ Test 1: SingleBinaryEncoder
 reg [1:0] un_encoded_data = 0; // un_encoded_data: input to the SingleBinaryEncoder
 reg [2:0] counter = 0; // counter: used to count up to 2^3=8
 always @(posedge clock1220) begin
@@ -190,3 +188,24 @@ Observing DO:
 ![Test 3](./Waves/Test%203.png)
 Zooming in:
 ![Test 3 Zoomed](./Waves/Test%203%20zoomed.png)
+
+
+**Test 4**
+```sv
+reg [4 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
+initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
+    strip[023:000] = 24'hFA0000;
+    strip[047:024] = 24'h00FB00;
+    strip[071:048] = 24'h0000FC;
+    strip[095:072] = 24'hABCDEF;
+end
+// FA0000 = 00000000 11111010 00000000
+// 00FB00 = 11111011 00000000 00000000
+// 0000FC = 00000000 00000000 11111100
+// ABCDEF = 11001101 10101011 11101111
+// Remember R and G are swapped
+Veopixels #(.LENGTH(4)) MLE(clk, strip, DO);
+```
+This time we just test on the FPGA, and it works.
+
+
