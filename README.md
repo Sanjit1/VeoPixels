@@ -52,44 +52,116 @@ We send the data in the following order:  `G7, G6, G5, G4, G3, G2, G1, G0, R7, R
 ### Our Sequences:
 For our binary sequences we use the following:
 
-0 code: `0.36us high, 0.86us low`
+0 code: `0.3us high, 0.92us low`
 
-1 code: `0.69us high, 0.53us low`
+1 code: `0.8us high, 0.42us low`
 
-Reset code: `29.28us low`
+Reset code: `292.8us low`
 
-The 1 and 0 codes are used since they add to **1.22us**, which makes the data easier to encode, since it takes the same time to send either code. The reset code is the amount of time it takes to send 24 bits of data which is also easier to send. 
+The 1 and 0 codes are used since they add to **1.22us**, which makes the data easier to encode, since it takes the same time to send either code. The reset code is the amount of time it takes to send 10 pixels of data, which is easier to implement and still quite fast.
 
 Instead of sending the data in the order of the datasheet, we will send it in the following order: `R7, R6, R5, R4, R3, R2, R1, R0, G7, G6, G5, G4, G3, G2, G1, G0, B7, B6, B5, B4, B3, B2, B1, B0`, since RGB is the most common color format. To set it to a GRB mode, we will just change the order of the data.
 
 <br>
 
 ## Waves and Testbenches:
-Refer to the testbench file: [tb_tester.sv](./tb_tester.sv)
+Refer to the testbench file: [testbench.sv](./testbench.sv)
 for more information.
+To run these testbenches, you will need to add a 50MHz clock to clk in your simulator. For questa, you can do that with the command `force -freeze sim:/testbench/clk 1 0, 0 {10 ns} -r 20`, or simply adding a clock with a period of 20ns.
 
-**Test 1**: SingleBinaryEncoder
+### Clocks
+We use various clocks in our testbenches. The clocks are as follows:
+ - ``clk``: 50MHz clock: $\frac12$ duty cycle: This represents the actual clock on the FPGA.
+ - ``clock1220``: 1220ns clock: $\frac1{61}$ duty cycle: During the period of each clock1220, a single bit of data is sent to the WS2812. The duty cycle is not important but is easier to implement.
+
+Implementation of the clock1220 clock: Note that we start the clock at 1, to synchronize it with the SingleBinaryEncoder module. If this is not done, binary data will be sent out of phase with the SingleBinaryEncoder which will cause the SingleBinaryEncoder to fail.
 ```sv
-    initial begin
-        un_encoded_data = 0;
-        #1220 un_encoded_data = 1;
-        #1220 un_encoded_data = 0;
-        #1220 un_encoded_data = 1;
-        #1220 un_encoded_data = 1;
-        #1220 un_encoded_data = 0;
-        #1220 un_encoded_data = 0;
+reg clock1220 = 0; // clock1220: 1220ns clock 
+reg [5:0] clock1220_counter = 0; // counter: used to count up to 2^6=64
+always @(posedge clk) begin
+    if (clock1220_counter == 60) begin
+        clock1220_counter = 0;
     end
-    
-    SingleBinaryEncoder SBE(clk, un_encoded_data, DO); 
+    else if (clock1220_counter == 0) begin
+        clock1220 = 1;
+        clock1220_counter = clock1220_counter + 1;
+    end
+    else begin
+        clock1220 = 0;
+        clock1220_counter = clock1220_counter + 1;
+    end
+end
 ```
 
+### Tests:
+**Test 1**: SingleBinaryEncoder
+```sv
+// ^ Test 1: SingleBinaryEncoder
+reg [1:0] un_encoded_data = 0; // un_encoded_data: input to the SingleBinaryEncoder
+reg [2:0] counter = 0; // counter: used to count up to 2^3=8
+always @(posedge clock1220) begin
+    // Test sorta random values of un_encoded_data: 1011001
+    counter = counter + 1;
+    if (counter == 1) un_encoded_data = 1;
+    else if (counter == 2) un_encoded_data = 0;
+    else if (counter == 3) un_encoded_data = 1;
+    else if (counter == 4) un_encoded_data = 1;
+    else if (counter == 5) un_encoded_data = 0;
+    else if (counter == 6) un_encoded_data = 0;
+    else if (counter == 7) un_encoded_data = 1;
+    else counter = 0;
+end
+SingleBinaryEncoder SBE(clk, un_encoded_data, DO);
+```
+Use `run 8540` to simulate 1220*7=8540ns.
 SBE should encode un_encoded_data based on the [Our Sequence](#our-sequences) and output it to the DO port. Upon simulation, we get the following waveforms:
 
-DO:
-![Test 1 Sequence](./Waves/Test%201%20Sequence.png)
+Observing DO and clk:
+![Test 1](./Waves/Test%201.png)
+If we look at the waveform we see 1011001 being sent out. 
+Zooming in:
+![Test 1 Zoomed](./Waves/Test%201%20zoomed.png)
+Zooming in gives us a better look at the one bit and the zero bit. We can see that the one bit is 0.8us high and 0.42us low, and the zero bit is 0.3us high and 0.92us low. This is correct. Each bit is 1.22us long, which is correct. Furthermore the clock is visible and 20ns long, which is correct.
 
-We can tell the test was successful by looking at the DO waveform. 
 
-It is also worth observing in more close proximity:
-![Test 1 Clock](./Waves/Test%201%20Clock.png)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Test 2**: SingleLEDEncoder
+```sv
+reg [23:0] data = 24'hFBAED2; // Lets use Lavender as our test color: 24'hFBAED2 = 11111011 10101110 11010010.
+output reg sending_data; // sending_data: output from the SingleLEDEncoder
+// To use this testbench with Questa, you will force the following signals:
+// clk: 50MHz (20ns period)
+// sending_data: test various values with 1220*24=29,280ns between each change.
+// // Yes, I know that this is a lazy test.
+SingleLEDEncoder SLE(clk, data, sending_data, DO);
+```
+
+Using the instructions to view the waveforms.
+Observing DO:
+![Test 2](./Waves/Test%202.png)
+Observing the waves, we can see that there are 24 bits: `01001011 01110101 11011111`. This is the reverse of `#FBAED2`, which is not *particularly* wrong. We can work with this, and correct this in MultipleLEDEncoder.
+Observing sending_data:
+![Test 2 sending_data](./Waves/Test%202%20sending%20data.png)
+As observed, sending_data controls wether a signal is sent or not. This is correct.
+
+
+**Test 3**
+```sv
+
+```
