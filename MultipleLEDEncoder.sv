@@ -27,6 +27,7 @@ module MultipleLEDEncoder #(parameter LENGTH = 10)( // Default length is 10 Pixe
 
     reg sending_data;
     reg [23:0] uncoded_24_bit;
+    reg [23:0] temp_24_bit;
     reg clock29280 = 0;
     reg [4:0] clock29280_counter = 23; // Since 29280 can be divided by 1220, we can use the same clock for both. 29280/1220 = 24, therefore the number of bits we need to count 24 cycles is 5 bits.
     
@@ -55,13 +56,18 @@ module MultipleLEDEncoder #(parameter LENGTH = 10)( // Default length is 10 Pixe
     // if we are at LENGTH, set sending_data to 0 and reset current_pixel to 0
     always @(posedge clock29280) begin
         if (current_pixel < LENGTH) begin
-            //uncoded_24_bit <= strip[current_pixel * 24 +: 24];
-            // this shuffles the bits around so we want to unshuffle them
-            // currently we get 24'hbBrRgG
-            // we want 24'hRrGgBb
-            uncoded_24_bit <= {strip[current_pixel * 24 + 8 -: 8], strip[current_pixel * 24 + 16 + 8 -:8], strip[current_pixel * 24 + 8 + 8 -:8]}; // This is the correct one
-            // uncoded_24_bit <= {strip[current_pixel * 24 + 16 +: 8], strip[current_pixel * 24 + 8 +: 8], strip[current_pixel * 24 +: 8]}; // Incorrect attempt 1
-            //uncoded_24_bit <= {strip[current_pixel * 24 +: 8], strip[current_pixel * 24 + 16 +: 8], strip[current_pixel * 24 + 8 +: 8]};  // Incorrect attempt 2
+            temp_24_bit = strip[current_pixel * 24 +: 24];
+            // These are flipped because the strip is sent in reverse order
+            // it is also in green, red, blue order so we need to flip it to red, green, blue
+            for (int i = 0; i < 8; i = i + 1) begin
+                // red
+                uncoded_24_bit[i] <= temp_24_bit[15 - i];
+                // green
+                uncoded_24_bit[i + 8] <= temp_24_bit[23 - i];
+                // blue
+                uncoded_24_bit[i + 16] <= temp_24_bit[7 - i];    
+            
+            end // There is definitely a better way to do this, but I spent an hour trying to do it without temp_24_bit so well.
             sending_data <= 1;
             current_pixel <= current_pixel + 1;
         end

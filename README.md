@@ -161,7 +161,32 @@ Observing sending_data:
 As observed, sending_data controls wether a signal is sent or not. This is correct.
 
 
+
+
+
+
+
+
+
+
 **Test 3**
 ```sv
-
+reg [4 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
+initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
+    strip[023:000] = 24'hFA0000;
+    strip[047:024] = 24'h00FB00;
+    strip[071:048] = 24'h0000FC;
+    strip[095:072] = 24'hABCDEF;
+end
+// FA0000 = 00000000 11111010 00000000
+// 00FB00 = 11111011 00000000 00000000
+// 0000FC = 00000000 00000000 11111100
+// ABCDEF = 11001101 10101011 11101111
+// Remember R and G are swapped
+MultipleLEDEncoder #(.LENGTH(4)) MLE(clk, strip, DO);
 ```
+This time we test it on the testbench and the FPGA.
+Observing DO:
+![Test 3](./Waves/Test%203.png)
+Zooming in:
+![Test 3 Zoomed](./Waves/Test%203%20zoomed.png)
