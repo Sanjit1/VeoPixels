@@ -82,7 +82,7 @@ module testbench(
     // * It works!
 
     // ^ Test 4: Veopixels
-    // ? reg [4 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
+    // ? reg [4 * 24 - 1 : 0] strip = 0; // strip: 4 colors of 24 bits each
     // ? initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
     // ?     strip[023:000] = 24'hFA0000;
     // ?     strip[047:024] = 24'h00FB00;
@@ -97,6 +97,70 @@ module testbench(
     // ? Veopixels #(.LENGTH(4)) MLE(clk, strip, DO);
     // * It works! As pointless as this test is, it does work.
 
+    // ^ Test 5: Chase
+    reg [16 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
+    initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
+        strip[023:000] = 24'hFA0000;
+        strip[047:024] = 24'h00FB00;
+        strip[071:048] = 24'h0000FC;
+        strip[095:072] = 24'hABCDEF;
+        strip[119:096] = 24'hFFFF00;
+        strip[143:120] = 24'h000000;
+        strip[167:144] = 24'h000000;
+        strip[191:168] = 24'h000000;
+        strip[215:192] = 24'h000000;
+        strip[239:216] = 24'h000000;
+        strip[263:240] = 24'h000000;
+        strip[287:264] = 24'h000000;
+        strip[311:288] = 24'h000000;
+        strip[335:312] = 24'h000000;
+        strip[359:336] = 24'h000000;
+        strip[383:360] = 24'h000000;
+    end
+    Veopixels #(.LENGTH(16)) MLE(clk, strip, DO);
 
+    // Use a clock divider to do stuff every 100ms = 100,000,000ns, or 100,000,000ns/20ns = 5,000,000
+    reg [23:0] clock100ms = 0;
+    reg [23:0] clock100ms_counter = 0;
+    always @(posedge clk) begin
+        if (clock100ms_counter == 2500000) begin
+            clock100ms_counter = 0;
+        end
+        else if (clock100ms_counter == 0) begin
+            clock100ms = 1;
+            clock100ms_counter = clock100ms_counter + 1;
+        end
+        else begin
+            clock100ms = 0;
+            clock100ms_counter = clock100ms_counter + 1;
+        end
+    end
+
+    reg [23:0] temp = 0;
+    always @(posedge clock100ms) begin
+        // shift the strip
+        // set the temp to the last value
+        temp = strip[16 * 24 - 1 : 16 * 24 - 24];
+        // set the last pixel to the second to last pixel
+        strip[16 * 24 - 1 : 16 * 24 - 24] = strip[16 * 24 - 24 - 1 : 16 * 24 - 48];
+        // set the second to last pixel to the third to last pixel
+        strip[16 * 24 - 24 - 1 : 16 * 24 - 48] = strip[16 * 24 - 48 - 1 : 16 * 24 - 72];
+        // and so on
+        strip[16 * 24 - 48 - 1 : 16 * 24 - 72] = strip[16 * 24 - 72 - 1 : 16 * 24 - 96];
+        strip[16 * 24 - 72 - 1 : 16 * 24 - 96] = strip[16 * 24 - 96 - 1 : 16 * 24 - 120];
+        strip[16 * 24 - 96 - 1 : 16 * 24 - 120] = strip[16 * 24 - 120 - 1 : 16 * 24 - 144];
+        strip[16 * 24 - 120 - 1 : 16 * 24 - 144] = strip[16 * 24 - 144 - 1 : 16 * 24 - 168];
+        strip[16 * 24 - 144 - 1 : 16 * 24 - 168] = strip[16 * 24 - 168 - 1 : 16 * 24 - 192];
+        strip[16 * 24 - 168 - 1 : 16 * 24 - 192] = strip[16 * 24 - 192 - 1 : 16 * 24 - 216];
+        strip[16 * 24 - 192 - 1 : 16 * 24 - 216] = strip[16 * 24 - 216 - 1 : 16 * 24 - 240];
+        strip[16 * 24 - 216 - 1 : 16 * 24 - 240] = strip[16 * 24 - 240 - 1 : 16 * 24 - 264];
+        strip[16 * 24 - 240 - 1 : 16 * 24 - 264] = strip[16 * 24 - 264 - 1 : 16 * 24 - 288];
+        strip[16 * 24 - 264 - 1 : 16 * 24 - 288] = strip[16 * 24 - 288 - 1 : 16 * 24 - 312];
+        strip[16 * 24 - 288 - 1 : 16 * 24 - 312] = strip[16 * 24 - 312 - 1 : 16 * 24 - 336];
+        strip[16 * 24 - 312 - 1 : 16 * 24 - 336] = strip[16 * 24 - 336 - 1 : 16 * 24 - 360];
+        strip[16 * 24 - 336 - 1 : 16 * 24 - 360] = strip[16 * 24 - 360 - 1 : 16 * 24 - 384];
+        // set the first pixel to the temp
+        strip[16 * 24 - 360 - 1 : 16 * 24 - 384] = temp;
+    end
 
 endmodule

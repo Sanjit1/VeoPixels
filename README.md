@@ -1,10 +1,25 @@
 # VeoPixels
 Veopixels, a library? package? collection? driver? idk... something for NeoPixels written in SystemVerilog.
 
-## What is it?
-I don't know what it is, but I will call it a library written in SystemVerilog to control WS2812 NeoPixels. 
+<br>
 
-<br> 
+## TOC
+- [VeoPixels](#veopixels)
+  - [TOC](#toc)
+  - [Why?](#why)
+  - [Modules](#modules)
+  - [Formatting Data](#formatting-data)
+    - [Binary Sequence:](#binary-sequence)
+    - [Data Sequence:](#data-sequence)
+    - [Our Sequences:](#our-sequences)
+  - [Waves and Testbenches:](#waves-and-testbenches)
+    - [Clocks](#clocks)
+    - [Tests:](#tests)
+      - [**Test 1**: SingleBinaryEncoder](#test-1-singlebinaryencoder)
+      - [**Test 2**: SingleLEDEncoder](#test-2-singleledencoder)
+      - [**Test 3**: MultipleLEDEncoder](#test-3-multipleledencoder)
+      - [**Test 4**: Veopixels](#test-4-veopixels)
+      - [**Test 5**: Chase](#test-5-chase)
 
 ## Why?
 Cuz I can.
@@ -68,6 +83,8 @@ Refer to the testbench file: [testbench.sv](./testbench.sv)
 for more information.
 To run these testbenches, you will need to add a 50MHz clock to clk in your simulator. For questa, you can do that with the command `force -freeze sim:/testbench/clk 1 0, 0 {10 ns} -r 20`, or simply adding a clock with a period of 20ns.
 
+<br>
+
 ### Clocks
 We use various clocks in our testbenches. The clocks are as follows:
  - ``clk``: 50MHz clock: $\frac12$ duty cycle: This represents the actual clock on the FPGA.
@@ -92,8 +109,10 @@ always @(posedge clk) begin
 end
 ```
 
+<br>
+
 ### Tests:
-**Test 1**: SingleBinaryEncoder
+#### **Test 1**: SingleBinaryEncoder
 ```sv
 reg [1:0] un_encoded_data = 0; // un_encoded_data: input to the SingleBinaryEncoder
 reg [2:0] counter = 0; // counter: used to count up to 2^3=8
@@ -114,11 +133,22 @@ SingleBinaryEncoder SBE(clk, un_encoded_data, DO);
 Use `run 8540` to simulate 1220*7=8540ns.
 SBE should encode un_encoded_data based on the [Our Sequence](#our-sequences) and output it to the DO port. Upon simulation, we get the following waveforms:
 
+
 Observing DO and clk:
+
+
 ![Test 1](./Waves/Test%201.png)
+
+
 If we look at the waveform we see 1011001 being sent out. 
+
+
 Zooming in:
+
+
 ![Test 1 Zoomed](./Waves/Test%201%20zoomed.png)
+
+
 Zooming in gives us a better look at the one bit and the zero bit. We can see that the one bit is 0.8us high and 0.42us low, and the zero bit is 0.3us high and 0.92us low. This is correct. Each bit is 1.22us long, which is correct. Furthermore the clock is visible and 20ns long, which is correct.
 
 
@@ -126,6 +156,7 @@ Zooming in gives us a better look at the one bit and the zero bit. We can see th
 
 
 
+<br>
 
 
 
@@ -138,8 +169,7 @@ Zooming in gives us a better look at the one bit and the zero bit. We can see th
 
 
 
-
-**Test 2**: SingleLEDEncoder
+#### **Test 2**: SingleLEDEncoder
 ```sv
 reg [23:0] data = 24'hFBAED2; // Lets use Lavender as our test color: 24'hFBAED2 = 11111011 10101110 11010010.
 output reg sending_data; // sending_data: output from the SingleLEDEncoder
@@ -151,23 +181,35 @@ SingleLEDEncoder SLE(clk, data, sending_data, DO);
 ```
 
 Using the instructions to view the waveforms.
+
+
 Observing DO:
+
+
 ![Test 2](./Waves/Test%202.png)
+
+
 Observing the waves, we can see that there are 24 bits: `01001011 01110101 11011111`. This is the reverse of `#FBAED2`, which is not *particularly* wrong. We can work with this, and correct this in MultipleLEDEncoder.
+
+
 Observing sending_data:
+
+
 ![Test 2 sending_data](./Waves/Test%202%20sending%20data.png)
+
+
 As observed, sending_data controls wether a signal is sent or not. This is correct.
 
 
 
 
 
+<br>
 
 
 
 
-
-**Test 3**
+#### **Test 3**: MultipleLEDEncoder
 ```sv
 reg [4 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
 initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
@@ -183,16 +225,30 @@ end
 // Remember R and G are swapped
 MultipleLEDEncoder #(.LENGTH(4)) MLE(clk, strip, DO);
 ```
+
 This time we test it on the testbench and the FPGA.
+
+
 Observing DO:
+
+
 ![Test 3](./Waves/Test%203.png)
+
+
 Zooming in:
+
+
 ![Test 3 Zoomed](./Waves/Test%203%20zoomed.png)
 
+These are a bit hard to look at but when we pay attention to DO, it is correct!
 
-**Test 4**
+
+<br>
+
+
+#### **Test 4**: Veopixels
 ```sv
-reg [4 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
+reg [4 * 24 - 1 : 0] strip = 0; // strip: 4 colors of 24 bits each
 initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
     strip[023:000] = 24'hFA0000;
     strip[047:024] = 24'h00FB00;
@@ -206,6 +262,79 @@ end
 // Remember R and G are swapped
 Veopixels #(.LENGTH(4)) MLE(clk, strip, DO);
 ```
+
 This time we just test on the FPGA, and it works.
 
 
+<br>
+
+
+#### **Test 5**: Chase
+```sv
+    reg [16 * 24 - 1 : 0] strip = 0; // strip: 5 colors of 24 bits each
+    initial begin // Lets encode Red, Green, Blue, White(101010) and Dim White(010101)
+        strip[023:000] = 24'hFA0000;
+        strip[047:024] = 24'h00FB00;
+        strip[071:048] = 24'h0000FC;
+        strip[095:072] = 24'hABCDEF;
+        strip[119:096] = 24'hFFFF00;
+        strip[143:120] = 24'h000000;
+        strip[167:144] = 24'h000000;
+        strip[191:168] = 24'h000000;
+        strip[215:192] = 24'h000000;
+        strip[239:216] = 24'h000000;
+        strip[263:240] = 24'h000000;
+        strip[287:264] = 24'h000000;
+        strip[311:288] = 24'h000000;
+        strip[335:312] = 24'h000000;
+        strip[359:336] = 24'h000000;
+        strip[383:360] = 24'h000000;
+    end
+    Veopixels #(.LENGTH(16)) MLE(clk, strip, DO);
+
+    // Use a clock divider to do stuff every 100ms = 100,000,000ns, or 100,000,000ns/20ns = 5,000,000
+    reg [23:0] clock100ms = 0;
+    reg [23:0] clock100ms_counter = 0;
+    always @(posedge clk) begin
+        if (clock100ms_counter == 2500000) begin
+            clock100ms_counter = 0;
+        end
+        else if (clock100ms_counter == 0) begin
+            clock100ms = 1;
+            clock100ms_counter = clock100ms_counter + 1;
+        end
+        else begin
+            clock100ms = 0;
+            clock100ms_counter = clock100ms_counter + 1;
+        end
+    end
+
+    reg [23:0] temp = 0;
+    always @(posedge clock100ms) begin
+        // shift the strip
+        // set the temp to the last value
+        temp = strip[16 * 24 - 1 : 16 * 24 - 24];
+        // set the last pixel to the second to last pixel
+        strip[16 * 24 - 1 : 16 * 24 - 24] = strip[16 * 24 - 24 - 1 : 16 * 24 - 48];
+        // set the second to last pixel to the third to last pixel
+        strip[16 * 24 - 24 - 1 : 16 * 24 - 48] = strip[16 * 24 - 48 - 1 : 16 * 24 - 72];
+        // and so on
+        strip[16 * 24 - 48 - 1 : 16 * 24 - 72] = strip[16 * 24 - 72 - 1 : 16 * 24 - 96];
+        strip[16 * 24 - 72 - 1 : 16 * 24 - 96] = strip[16 * 24 - 96 - 1 : 16 * 24 - 120];
+        strip[16 * 24 - 96 - 1 : 16 * 24 - 120] = strip[16 * 24 - 120 - 1 : 16 * 24 - 144];
+        strip[16 * 24 - 120 - 1 : 16 * 24 - 144] = strip[16 * 24 - 144 - 1 : 16 * 24 - 168];
+        strip[16 * 24 - 144 - 1 : 16 * 24 - 168] = strip[16 * 24 - 168 - 1 : 16 * 24 - 192];
+        strip[16 * 24 - 168 - 1 : 16 * 24 - 192] = strip[16 * 24 - 192 - 1 : 16 * 24 - 216];
+        strip[16 * 24 - 192 - 1 : 16 * 24 - 216] = strip[16 * 24 - 216 - 1 : 16 * 24 - 240];
+        strip[16 * 24 - 216 - 1 : 16 * 24 - 240] = strip[16 * 24 - 240 - 1 : 16 * 24 - 264];
+        strip[16 * 24 - 240 - 1 : 16 * 24 - 264] = strip[16 * 24 - 264 - 1 : 16 * 24 - 288];
+        strip[16 * 24 - 264 - 1 : 16 * 24 - 288] = strip[16 * 24 - 288 - 1 : 16 * 24 - 312];
+        strip[16 * 24 - 288 - 1 : 16 * 24 - 312] = strip[16 * 24 - 312 - 1 : 16 * 24 - 336];
+        strip[16 * 24 - 312 - 1 : 16 * 24 - 336] = strip[16 * 24 - 336 - 1 : 16 * 24 - 360];
+        strip[16 * 24 - 336 - 1 : 16 * 24 - 360] = strip[16 * 24 - 360 - 1 : 16 * 24 - 384];
+        // set the first pixel to the temp
+        strip[16 * 24 - 360 - 1 : 16 * 24 - 384] = temp;
+    end
+```
+This time we just test on the FPGA, and it works: its beautiful.
+![Chase](./Waves/Chase.gif)
